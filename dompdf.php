@@ -9,7 +9,7 @@ use Dompdf\Options;
 
 // $data = get_data();
 $mktu_urls = get_mktu_urls();
-$urls= filter_mktu_urls($mktu_urls, 23);
+$urls= filter_mktu_urls($mktu_urls, 42);
 
 // set options for pdf file
 $options = new Options();
@@ -28,23 +28,16 @@ $page_break_end = '</div>';
 $content = $start_content;
 
 foreach ($urls as $url) {
+	echo $url . PHP_EOL;
 	$html = file_get_contents($url);
 	$title = '<h1 class="main-title">' . mb_split('</h1>', mb_split('<h1 class="main-title">', $html)[1])[0] . '</h1>';
 	$page_content = mb_split('<div class="mktu__init-content">', $html)[1];
-	$chat_answer = mb_split('<p class="init__title">В данном классе также смотрят:</p>', $page_content)[0];
+	$chat_answer_with_links = mb_split('<p class="init__title">В данном классе также смотрят:</p>', $page_content)[0];
+	$chat_answer = preg_replace('/<a href="\/class([\d]{1,2})">([\w\W]*?)<\/a>/iu', '$1', $chat_answer_with_links);
 	$content .= $page_break_start . $title . $chat_answer . $page_break_end;
 }
 
 $content .= $end_content;
-
-
-
-// $content = file_get_contents("https://mktu.org/class3/abrazivy");
-// $style = file_get_contents('./styles.html');
-// $title = '<h1 class="main-title">' . mb_split('</h1>', mb_split('<h1 class="main-title">', $content)[1])[0] . '</h1>';
-// $content = mb_split('<div class="mktu__init-content">', $content)[1];
-// $content = $style . '<body><div class="page-break">' . $title . mb_split('<p class="init__title">В данном классе также смотрят:</p>', $content)[0] . '</div>';
-
 
 $dompdf->loadHtml($content);
 
@@ -54,7 +47,7 @@ $dompdf->setPaper('A4', 'portrait');
 // Render the HTML as PDF
 $dompdf->render();
 $output = $dompdf->output();
-file_put_contents('dompdf.pdf', $output);
+file_put_contents('класс42.pdf', $output);
 
 // // Output the generated PDF to Browser
 // $dompdf->stream();
